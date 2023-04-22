@@ -1,0 +1,46 @@
+import { handleLogin } from '../redux/slicers/loginSlice';
+import { useAppDispatch, useAppSelector } from './hooks';
+import { loginAsync } from '../redux/actions/actions';
+
+export const useLoginHoc = (url: string) => {
+  const dispatch = useAppDispatch();
+  const { login } = useAppSelector((state) => state.loginSlice);
+  const newLogin = url === '/reg' ? login : { email: login.email, password: login.password };
+
+  const handleValues = (prop: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch(handleLogin({ ...newLogin, [prop]: e.target.value }));
+  };
+
+  const loginAsyncUI = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    dispatch(loginAsync(url));
+  };
+
+  return { handleValues, loginAsyncUI };
+};
+
+
+import React, { FC } from 'react';
+import { useLoginHoc } from '../../hooks/useLoginHoc';
+
+export interface Props {
+  handleValues: (prop: string) => (e: React.ChangeEvent<HTMLInputElement>) => void;
+  loginAsyncUI: (e: React.FormEvent<HTMLFormElement>) => void;
+}
+
+const Register: FC = () => {
+  const url = '/reg';
+  const { handleValues, loginAsyncUI } = useLoginHoc(url);
+
+  return (
+    <form onSubmit={loginAsyncUI}>
+      <h2>REGISTRATION</h2>
+      <input type="text" placeholder="username" onChange={handleValues('name')} />
+      <input type="text" placeholder="email" onChange={handleValues('email')} />
+      <input type="text" placeholder="password" onChange={handleValues('password')} />
+      <button>Register</button>
+    </form>
+  );
+};
+
+export default Register;
